@@ -114,7 +114,16 @@
         </Grid>
         <!--~Tool Panel-->
         <!--Viewport-->
-        <ht:HelixViewport3D Background="AliceBlue" Grid.Column="1" x:Name="view1" MouseDown="view1_MouseDown" MouseMove="view1_MouseMove" MouseUp="view1_MouseUp" KeyDown="view1_KeyDown" KeyUp="view1_KeyUp">
+        <ht:HelixViewport3D Background="AliceBlue" 
+                            ShowFrameRate="True" 
+                            ShowTriangleCountInfo="True" 
+                            Grid.Column="1" 
+                            x:Name="view1" 
+                            MouseDown="view1_MouseDown" 
+                            MouseMove="view1_MouseMove" 
+                            MouseUp="view1_MouseUp" 
+                            KeyDown="view1_KeyDown" 
+                            KeyUp="view1_KeyUp">
             <ht:DefaultLights/>
             <ht:GridLinesVisual3D Center="-0.5,-0.5,-0.5" Width="20" Length="20" MinorDistance="1" MajorDistance="10" Thickness="0.04">
                 <ht:GridLinesVisual3D.Fill>
@@ -126,7 +135,7 @@
                 </ht:GridLinesVisual3D.Fill>
             </ht:GridLinesVisual3D>
 
-            <ModelVisual3D Content="{Binding Model}"/>
+            <ModelVisual3D Content="{Binding RootModel}"/>
         </ht:HelixViewport3D>
         <!--Position-->
         <StackPanel Grid.Column="1" Orientation="Horizontal">

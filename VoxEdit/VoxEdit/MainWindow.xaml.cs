@@ -66,7 +66,7 @@ namespace VoxEdit
 
             foreach (var h in hits)
             {
-                if (h.Model == vm.PreviewModel)
+                if (h.Model == vm.CursorModel)
                     continue;
                 normal = h.Normal;
                 return h.Model;
@@ -88,7 +88,7 @@ namespace VoxEdit
                 if (shift)
                     vm.Remove(source);
                 else
-                    vm.Add(source, n);
+                    vm.HandleNormalClick(source, n);
             }
             else
             {
@@ -101,7 +101,7 @@ namespace VoxEdit
                         var pRound = new Point3D(Math.Round(pi.Value.X), Math.Round(pi.Value.Y), 0);
                         //    var pRound = new Point3D(Math.Floor(pi.Value.X), Math.Floor(pi.Value.Y), Math.Floor(pi.Value.Z));
                         //var pRound = new Point3D((int)pi.Value.X, (int)pi.Value.Y, (int)pi.Value.Z);
-                        vm.AddVoxel(pRound);
+                        vm.HandleClick(pRound);
                     }
                 }
             }
@@ -122,12 +122,28 @@ namespace VoxEdit
             var source = FindSource(p, out n);
             if (shift)
             {
-                vm.PreviewVoxel(null);
+                vm.PreviewCursorVoxel(null);
                 vm.HighlightVoxel(source);
             }
             else
             {
-                vm.PreviewVoxel(source, n);
+                if(source!=null)
+                {
+                    vm.PreviewCursorVoxel(source, n);
+                }
+                else
+                {
+                    var ray = Viewport3DHelper.Point2DtoRay3D(view1.Viewport, p);
+                    if (ray != null)
+                    {
+                        var pi = ray.PlaneIntersection(new Point3D(0, 0, 0.5), new Vector3D(0, 0, 1));
+                        if (pi.HasValue)
+                        {
+                            var pRound = new Point3D(Math.Round(pi.Value.X), Math.Round(pi.Value.Y), 0);
+                            vm.PreviewVoxel(pRound,true);
+                        }
+                    }
+                }
                 vm.HighlightVoxel(null);
             }
 
@@ -153,9 +169,7 @@ namespace VoxEdit
         private void ColorClick(object sender, RoutedEventArgs e)
         {
             Button source = sender as Button;
-            ColorInfo color = source?.Tag as ColorInfo;
-
-            if(color != null)
+            if(source?.Tag is ColorInfo color)
             {
                 (DataContext as MainViewModel).CurrentColor = color.Color;
             }
