@@ -7,9 +7,9 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 
-namespace VoxEdit
+namespace VoxEdit.Voxel
 {
-    public class Voxel
+    public class VoxelData
     {
         [XmlAttribute("Position")]
         public string XmlPosition
@@ -35,11 +35,11 @@ namespace VoxEdit
         [XmlIgnore]
         public Color Colour { get; set; }
 
-        public Voxel()
+        public VoxelData()
         {
         }
 
-        public Voxel(Point3D position, Color colour)
+        public VoxelData(Point3D position, Color colour)
         {
             Position = position;
             Colour = colour;

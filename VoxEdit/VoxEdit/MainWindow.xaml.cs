@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using VoxEdit.ViewModel;
+using VoxEdit.Voxel;
 
 namespace VoxEdit
 {
@@ -49,10 +51,6 @@ namespace VoxEdit
             base.OnKeyDown(e);
             switch (e.Key)
             {
-                case Key.Space:
-                    vm.PaletteIndex++;
-                    vm.CurrentColor = vm.GetPaletteColor();
-                    break;
                 case Key.A:
                     view1.ZoomExtents(500);
                     break;
@@ -150,6 +148,17 @@ namespace VoxEdit
         {
             // Should update preview voxel when shift is pressed
             UpdatePreview();
+        }
+
+        private void ColorClick(object sender, RoutedEventArgs e)
+        {
+            Button source = sender as Button;
+            ColorInfo color = source?.Tag as ColorInfo;
+
+            if(color != null)
+            {
+                (DataContext as MainViewModel).CurrentColor = color.Color;
+            }
         }
     }
 }

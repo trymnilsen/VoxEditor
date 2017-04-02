@@ -3,60 +3,80 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Xml;
 using System.Xml.Serialization;
+using VoxEdit.Voxel;
 
-namespace VoxEdit
+namespace VoxEdit.ViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-         public List<Voxel> Voxels { get; set; }
-        public Color CurrentColor { get; set; }
+        private Color currentColor;
+        private bool isSelecting;
+        public List<VoxelData> Voxels { get; set; }
         public Model3DGroup Model { get; set; }
 
-        public Dictionary<Model3D, Voxel> ModelToVoxel { get; private set; }
+        public Dictionary<Model3D, VoxelData> ModelToVoxel { get; private set; }
         public Dictionary<Model3D, Material> OriginalMaterial { get; private set; }
 
         public List<Model3D> Highlighted { get; set; }
         public Model3D PreviewModel { get; set; }
 
-        private readonly Color[] palette = new[]
-                                               {
-                                                   Colors.SeaGreen,
-                                                   Colors.OrangeRed,
-                                                   Colors.MidnightBlue,
-                                                   Colors.Firebrick,
-                                                   Colors.Gold,
-                                                   Colors.CornflowerBlue,
-                                                   Colors.Red,
-                                                   Colors.LightBlue,
-                                                   Colors.Tomato,
-                                                   Colors.YellowGreen,
-                                                   Colors.DarkCyan,
-                                                   Colors.Orange,
-                                                   Colors.DeepSkyBlue,
-                                                   Colors.DarkOrchid
-                                               };
+        public List<ColorInfo> Palette { get; set; }
 
         public int PaletteIndex { get; set; }
 
+        public Color CurrentColor
+        {
+            get { return currentColor; }
+            set
+            {
+                currentColor = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentColor)));
+            }
+        }
+
+        public bool IsSelecting
+        {
+            get { return isSelecting; }
+            set
+            {
+                isSelecting = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelecting)));
+            }
+        }
+        private SelectionViewModel selection;
+
+        public SelectionViewModel CurrentSelection
+        {
+            get { return selection; }
+            set { selection = value; }
+        }
+
+
         public MainViewModel()
         {
-            CurrentColor = GetPaletteColor();
+            Palette = (from PropertyInfo property in typeof(Colors).GetProperties()
+                orderby property.Name
+                select new ColorInfo(
+                    property.Name,
+                    (Color)property.GetValue(null, null))).ToList();
+            CurrentColor = Palette[0].Color;
             Model = new Model3DGroup();
-            Voxels = new List<Voxel>();
+            Voxels = new List<VoxelData>();
             Highlighted = new List<Model3D>();
-            ModelToVoxel = new Dictionary<Model3D, Voxel>();
+            ModelToVoxel = new Dictionary<Model3D, VoxelData>();
             OriginalMaterial = new Dictionary<Model3D, Material>();
-            Voxels.Add(new Voxel(new Point3D(0, 0, 0), CurrentColor));
+            Voxels.Add(new VoxelData(new Point3D(0, 0, 0), CurrentColor));
             UpdateModel();
         }
 
-        private readonly XmlSerializer serializer = new XmlSerializer(typeof(List<Voxel>), new[] { typeof(Voxel) });
+        private readonly XmlSerializer serializer = new XmlSerializer(typeof(List<VoxelData>), new[] { typeof(VoxelData) });
 
         public void Save(string fileName)
         {
@@ -71,7 +91,7 @@ namespace VoxEdit
                 using (var r = XmlReader.Create(fileName))
                 {
                     var v = serializer.Deserialize(r);
-                    Voxels = v as List<Voxel>;
+                    Voxels = v as List<VoxelData>;
                 }
                 UpdateModel();
                 return true;
@@ -80,11 +100,6 @@ namespace VoxEdit
             {
                 return false;
             }
-        }
-
-        public Color GetPaletteColor()
-        {
-            return palette[PaletteIndex % palette.Length];
         }
 
         public void UpdateModel()
@@ -102,7 +117,7 @@ namespace VoxEdit
             RaisePropertyChanged("Model");
         }
 
-        private static GeometryModel3D CreateVoxelModel3D(Voxel v)
+        private static GeometryModel3D CreateVoxelModel3D(VoxelData v)
         {
             const double size = 0.98;
             var m = new GeometryModel3D();
@@ -144,7 +159,7 @@ namespace VoxEdit
         /// <param name="p">The p.</param>
         public void AddVoxel(Point3D p)
         {
-            Voxels.Add(new Voxel(p, CurrentColor));
+            Voxels.Add(new VoxelData(p, CurrentColor));
             UpdateModel();
         }
 
@@ -184,7 +199,7 @@ namespace VoxEdit
                 return;
             var v = ModelToVoxel[source];
             var previewColor = Color.FromArgb(0x80, CurrentColor.R, CurrentColor.G, CurrentColor.B);
-            var pv = new Voxel(v.Position + normal, previewColor);
+            var pv = new VoxelData(v.Position + normal, previewColor);
             PreviewModel = CreateVoxelModel3D(pv);
             Model.Children.Add(PreviewModel);
         }

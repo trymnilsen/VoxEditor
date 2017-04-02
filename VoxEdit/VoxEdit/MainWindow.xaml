@@ -5,21 +5,116 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ht="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
         xmlns:local="clr-namespace:VoxEdit"
+        xmlns:voxel="clr-namespace:VoxEdit.Voxel"
+        xmlns:conv="clr-namespace:VoxEdit.Converter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="VoxEdit" Height="650" Width="800">
+    <Window.Resources>
+        <conv:ColorToBrushConverter x:Key="ColorToBrush"></conv:ColorToBrushConverter>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"></ColumnDefinition>
+            <ColumnDefinition Width="200"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Grid>
+
+        <!--Tool Panel-->
+        <Grid Background="WhiteSmoke">
             <Grid.RowDefinitions>
-                <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
+            <!--File-->
+            <StackPanel Orientation="Vertical">
+                <Label Content=":: File" TextBlock.FontSize="12px" Background="LightGray"></Label>
+                <Button Content="New Voxel File"></Button>
+                <Button Content="Open Voxel File"></Button>
+                <Button Content="Save Voxel File"></Button>
+            </StackPanel>
+            <!--Selection-->
+            <StackPanel Orientation="Vertical" Grid.Row="1">
+                <Label Content=":: Selection" TextBlock.FontSize="12px" Background="LightGray"></Label>
+                <ToggleButton Content="Select Mode" IsChecked="{Binding IsSelecting}"></ToggleButton>
+                <Button Content="Clear Selection"></Button>
+                <!--Postion-->
+                <Label Background="WhiteSmoke" Content="Position (X/Y/Z)" TextBlock.FontSize="12px" Padding="2"></Label>
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <local:NumberBox></local:NumberBox>
+                    <local:NumberBox Grid.Column="1"></local:NumberBox>
+                    <local:NumberBox Grid.Column="2"></local:NumberBox>
+                </Grid>
+                <!--X1-->
+                <Label Background="WhiteSmoke" Content="X1 (X/Y/Z)" TextBlock.FontSize="12px" Padding="2"></Label>
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <local:NumberBox></local:NumberBox>
+                    <local:NumberBox Grid.Column="1"></local:NumberBox>
+                    <local:NumberBox Grid.Column="2"></local:NumberBox>
+                </Grid>
+                <!--X2-->
+                <Label Background="WhiteSmoke" Content="X2 (X/Y/Z)" TextBlock.FontSize="12px" Padding="2"></Label>
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <local:NumberBox></local:NumberBox>
+                    <local:NumberBox Grid.Column="1"></local:NumberBox>
+                    <local:NumberBox Grid.Column="2"></local:NumberBox>
+                </Grid>
+            </StackPanel>
+            <!--Actions-->
+            <StackPanel Grid.Row="2">
+                <Label Background="LightGray" Content=":: Actions" TextBlock.FontSize="12px"></Label>
+                <Button Content="Fill"></Button>
+                <Button Content="Clear"></Button>
+            </StackPanel>
+            <!--Palette-->
+            <Grid Grid.Row="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="50px"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Content=":: Color" Background="LightGray"></Label>
+                <ScrollViewer Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding Palette}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel></WrapPanel>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type voxel:ColorInfo}">
+                                <Button Click="ColorClick" Tag="{Binding}">
+                                    <Button.Template>
+                                        <ControlTemplate>
+                                            <Border Width="20" Height="20" Background="{Binding SampleBrush}"></Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Border BorderBrush="DarkSlateGray" BorderThickness="2" Margin="10" Grid.Row="2" Background="{Binding CurrentColor, Converter={StaticResource ColorToBrush}}"></Border>
+            </Grid>
         </Grid>
-        <ht:HelixViewport3D Grid.Column="1" x:Name="view1" MouseDown="view1_MouseDown" MouseMove="view1_MouseMove" MouseUp="view1_MouseUp" KeyDown="view1_KeyDown" KeyUp="view1_KeyUp">
+        <!--~Tool Panel-->
+        <!--Viewport-->
+        <ht:HelixViewport3D Background="AliceBlue" Grid.Column="1" x:Name="view1" MouseDown="view1_MouseDown" MouseMove="view1_MouseMove" MouseUp="view1_MouseUp" KeyDown="view1_KeyDown" KeyUp="view1_KeyUp">
             <ht:DefaultLights/>
             <ht:GridLinesVisual3D Center="-0.5,-0.5,-0.5" Width="20" Length="20" MinorDistance="1" MajorDistance="10" Thickness="0.04">
                 <ht:GridLinesVisual3D.Fill>
@@ -33,5 +128,102 @@
 
             <ModelVisual3D Content="{Binding Model}"/>
         </ht:HelixViewport3D>
+        <!--Position-->
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <!--On Grid-->
+            <Grid x:Name="CursorOnGridPlanePositionBlock" HorizontalAlignment="Left" VerticalAlignment="Top"  Margin="20,0,0,0" Background="WhiteSmoke" Opacity="1" IsHitTestVisible="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition MinWidth="50"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                        Grid.Column="0"
+                        Text="x"
+                        Margin="5,0,4,0"/>
+                <TextBox Grid.Row="0" Grid.Column="1"
+                        BorderThickness="0"
+                        TextAlignment="Right"
+                        Background="{Binding Path=Background, RelativeSource={RelativeSource TemplatedParent}}"
+                        Text="{Binding Path=CursorOnConstructionPlanePosition.X, ElementName=view1, StringFormat={}{0:f1}, FallbackValue=---}" />
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                        Text="y" Margin="5,0,4,0" />
+                <TextBox Grid.Row="1" Grid.Column="1"
+                        BorderThickness="0"
+                        TextAlignment="Right"
+                        Background="{Binding Path=Background, RelativeSource={RelativeSource TemplatedParent}}"
+                        Text="{Binding Path=CursorOnConstructionPlanePosition.Y, ElementName=view1, StringFormat={}{0:f1}, FallbackValue=---}" />
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                        Text="z" Margin="5,0,4,0" />
+                <TextBox Grid.Row="2" Grid.Column="1"
+                        BorderThickness="0"
+                        TextAlignment="Right"
+                        Background="{Binding Path=Background, RelativeSource={RelativeSource TemplatedParent}}"
+                        Text="{Binding Path=CursorOnConstructionPlanePosition.Z, ElementName=view1, StringFormat={}{0:f1}, FallbackValue=---}" />
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        HorizontalAlignment="Center"
+                        Text="Grid" Background="Bisque"/>
+                <TextBlock Grid.Row="4" Grid.Column="0" 
+                        Grid.ColumnSpan="3" 
+                        HorizontalAlignment="Center" 
+                        Text="Position" 
+                        Background="Bisque"/>
+            </Grid>
+            <!--Element-->
+            <Grid x:Name="CursorOnElementPositionBlock" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top"  Margin="20,0,0,0" Background="WhiteSmoke" Opacity="1" IsHitTestVisible="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition MinWidth="50"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                        Grid.Column="0"
+                        Text="x"
+                        Margin="5,0,4,0"/>
+                <TextBox Grid.Row="0" Grid.Column="1"
+                        BorderThickness="0"
+                        TextAlignment="Right"
+                        Background="{Binding Path=Background, RelativeSource={RelativeSource TemplatedParent}}"
+                        Text="{Binding Path=CursorOnConstructionPlanePosition.X, ElementName=view1, StringFormat={}{0:f1}, FallbackValue=---}" />
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                        Text="y" Margin="5,0,4,0" />
+                <TextBox Grid.Row="1" Grid.Column="1"
+                        BorderThickness="0"
+                        TextAlignment="Right"
+                        Background="{Binding Path=Background, RelativeSource={RelativeSource TemplatedParent}}"
+                        Text="{Binding Path=CursorOnConstructionPlanePosition.Y, ElementName=view1, StringFormat={}{0:f1}, FallbackValue=---}" />
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                        Text="z" Margin="5,0,4,0" />
+                <TextBox Grid.Row="2" Grid.Column="1"
+                        BorderThickness="0"
+                        TextAlignment="Right"
+                        Background="{Binding Path=Background, RelativeSource={RelativeSource TemplatedParent}}"
+                        Text="{Binding Path=CursorOnConstructionPlanePosition.Z, ElementName=view1, StringFormat={}{0:f1}, FallbackValue=---}" />
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        HorizontalAlignment="Center"
+                        Text="Element" Background="Bisque"/>
+                <TextBlock Grid.Row="4" Grid.Column="0" 
+                        Grid.ColumnSpan="3" 
+                        HorizontalAlignment="Center" 
+                        Text="Position" 
+                        Background="Bisque"/>
+            </Grid>
+        </StackPanel>
     </Grid>
 </Window>
